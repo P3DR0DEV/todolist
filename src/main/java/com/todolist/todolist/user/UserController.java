@@ -5,6 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,9 +36,16 @@ public class UserController {
   }
 
   @PostMapping("create")
-  public UserModel createUser(@RequestBody UserModel userModel) {
-    var user = this.userRepository.save(userModel);
-    return user;
+  public ResponseEntity createUser(@RequestBody UserModel userModel) {
+    var user = this.userRepository.findByUsername(userModel.getUsername());
+
+    if (user != null) {
+      System.out.println("This username have already been taken");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User have already been taken");
+    }
+    var createdUser = this.userRepository.save(userModel);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
 
   @DeleteMapping("users/{id}")
