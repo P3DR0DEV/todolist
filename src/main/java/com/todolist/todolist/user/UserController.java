@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+
 @RestController
 public class UserController {
 
@@ -41,8 +43,11 @@ public class UserController {
       System.out.println("This username have already been taken");
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User have already been taken");
     }
-    var createdUser = this.userRepository.save(userModel);
+    var hashedPassword = BCrypt.withDefaults().hashToString(12, userModel.getPassword().toCharArray());
 
+    userModel.setPassword(hashedPassword);
+
+    var createdUser = this.userRepository.save(userModel);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
 
